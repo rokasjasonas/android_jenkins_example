@@ -1,0 +1,104 @@
+apply plugin: 'cpd'
+apply plugin: 'checkstyle'
+apply plugin: 'pmd'
+apply plugin: 'findbugs'
+apply plugin: 'jacoco'
+
+check.dependsOn 'checkstyle', 'pmdMain', 'pmdTest', 'findbugs', 'jacocoUTReport'
+
+checkstyle {
+    toolVersion = '6.7'
+}
+
+jacoco {
+    version = '0.7.4.201502262128'
+}
+
+cpdCheck {
+    ignoreFailures = true
+    source = files('src/main/java')
+}
+
+task checkstyle(type: Checkstyle) {
+    group = 'verification'
+    ignoreFailures = true
+    configFile file('config/checkstyle/checkstyle.xml')
+    source = files('src/main/java', 'src/test/java')
+
+    classpath = files()
+}
+
+task pmdMain(type: Pmd) {
+    group = 'verification'
+    ignoreFailures = true
+    ruleSetFiles = files('config/pmd/main-rules.xml')
+
+    source = files('src/main/java')
+
+    reports {
+        xml.enabled = true
+        html.enabled = true
+    }
+}
+
+task pmdTest(type: Pmd) {
+    group = 'verification'
+    ignoreFailures = true
+    ruleSetFiles = files('config/pmd/test-rules.xml');
+
+    source = files('src/test/java')
+
+    reports {
+        xml.enabled = true
+        xml.destination = "$project.buildDir/reports/pmd/test.xml"
+        html.enabled = true
+        html.destination = "$project.buildDir/reports/pmd/test.html"
+    }
+}
+
+task findbugs(type: FindBugs) {
+    group = 'verification'
+    ignoreFailures = true
+//    dependsOn 'assemble'
+    effort = 'max'
+    reportLevel = 'high'
+    excludeFilter = new File('config/findbugs/findbugs-filter.xml')
+    classes = files("$project.buildDir/intermediates/classes/")
+
+    source = files('src/main/java')
+
+    reports {
+        xml.enabled = true
+        xml.destination = "$project.buildDir/reports/findbugs/findbugs.xml"
+        html.enabled = false
+        html.destination "$project.buildDir/reports/findbugs/findbugs.html"
+    }
+
+    classpath = files()
+}
+
+// The built-in jacoco plugin automatically applies itself to all Test tasks
+tasks.withType(Test).whenTaskAdded {
+    it.jacoco.append = true
+    it.jacoco.classDumpFile = file("$project.buildDir/jacoco/dump")
+}
+
+// These tasks are for generating the coverage report after JUnit+robolectric tests have executed
+tasks.create(name: "jacocoUTReport", type: JacocoReport, dependsOn: "test") {
+    group = "Reporting"
+    description = "Generate Jacoco UT coverage reports"
+    classDirectories = fileTree(
+            dir: "${project.buildDir}/intermediates/classes/debug/",
+            excludes: ['**/R.class',
+                       '**/R$*.class',
+                       '**/*$ViewInjector*.*',
+                       '**/BuildConfig.*',
+                       '**/Manifest*.*']
+    )
+    sourceDirectories = files("src/main/java", "src/debug/java", "src/test/java")
+    executionData = files("${project.buildDir}/jacoco/testDebugUnitTest.exec")
+    reports {
+        xml.enabled = true
+        html.enabled = true
+    }
+}

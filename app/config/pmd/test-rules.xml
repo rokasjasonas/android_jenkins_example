@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<ruleset xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" name="Test ruleset"
+    xmlns="http://pmd.sourceforge.net/ruleset/2.0.0"
+    xsi:schemaLocation="http://pmd.sourceforge.net/ruleset/2.0.0 http://pmd.sourceforge.net/ruleset_2_0_0.xsd">
+    <description>
+        This ruleset checks tests code for bad stuff
+    </description>
+
+    <rule ref="app/config/pmd/main-rules.xml">
+        <exclude name="SignatureDeclareThrowsException" />
+        <exclude name="TooManyStaticImports" />
+        <exclude name="TooManyMethods" />
+        <exclude name="NullAssignment" />
+    </rule>
+    <rule ref="rulesets/java/junit.xml">
+        <!-- Do not support mockito verify() -->
+        <exclude name="JUnitTestsShouldIncludeAssert" />
+    </rule>
+</ruleset>
