@@ -91,6 +91,7 @@ tasks.create(name: "jacocoUTReport", type: JacocoReport, dependsOn: "test") {
             dir: "${project.buildDir}/intermediates/classes/debug/",
             excludes: ['**/R.class',
                        '**/R$*.class',
+                       '**/*$ViewBinder*.*',
                        '**/*$ViewInjector*.*',
                        '**/BuildConfig.*',
                        '**/Manifest*.*']
